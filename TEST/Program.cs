@@ -20,6 +20,8 @@ builder.Services.AddDbContext<APIEntities>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
 });
 
+builder.Services.AddCors(option => option.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -60,6 +62,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors();
 
 app.UseHttpsRedirection();
 

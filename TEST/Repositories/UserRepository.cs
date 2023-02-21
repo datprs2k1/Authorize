@@ -63,7 +63,7 @@ namespace TEST.Repositories
                 issuer: _configuration["JWT:Issuer"],
                 audience: _configuration["JWT:Audience"],
                 claims: authClaims,
-                expires: DateTime.UtcNow.AddMinutes(1),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: signingCredentials
                 );
 
@@ -78,7 +78,7 @@ namespace TEST.Repositories
                 isUsed = false,
                 isRevoked = false,
                 UserID = user.Id,
-                expiredAt = DateTime.UtcNow.AddMinutes(1),
+                expiredAt = DateTime.UtcNow.AddMinutes(30),
                 createdAt = DateTime.UtcNow
             };
 
@@ -220,6 +220,72 @@ namespace TEST.Repositories
             DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(tokenExpiredDate);
 
             return dateTimeOffset.UtcDateTime;
+        }
+
+        public async Task<List<UserDto>> GetUsersAsync()
+        {
+            var data = await _context.Users.ToListAsync();
+
+            return _mapper.Map<List<UserDto>>(data);
+
+        }
+
+        public async Task<UserDto> GetUserById(int id)
+        {
+            var data = await _context.Users.FindAsync(id);
+
+            return _mapper.Map<UserDto>(data);
+        }
+
+        public async Task<bool> UpdateUserAsync(int id, UserDto user)
+        {
+            var userData = await _context.Users.FindAsync(id);
+
+            if (userData == null)
+            {
+                throw new ApplicationException("User is not exits.");
+            }
+
+            userData.Name = user.Name;
+            userData.Email = user.Email;
+
+            _context.Users.Update(userData);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                throw new ApplicationException("User is not exist.");
+            }
+
+            _context.Users.Remove(user);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> LogoutAsync(TokenDto dto)
+        {
+            var token = await _context.Tokens.FirstOrDefaultAsync(x => x.token.Equals(dto.RefreshToken));
+
+            if (token == null)
+            {
+                return false;
+            }
+
+            token.isRevoked = true;
+            _context.Tokens.Update(token);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

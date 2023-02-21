@@ -19,9 +19,53 @@ namespace TEST.Controllers
 
         [HttpGet("")]
         [Authorize]
-        public async Task<IActionResult> GetUser()
+        public async Task<IActionResult> GetUsers()
         {
-            return Ok("OK");
+            var data = await _repo.GetUsersAsync();
+
+            return Ok(data);
+        }
+
+        [HttpGet("{id}")]
+
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var data = await _repo.GetUserById(id);
+
+            if (data == null)
+            {
+                return BadRequest("User is not exist.");
+            }
+
+            return Ok(data);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUser(int id, UserDto user)
+        {
+            var result = await _repo.UpdateUserAsync(id, user);
+
+            if (!result)
+            {
+                return BadRequest("Errors.");
+            }
+
+            return Ok("Updated.");
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var result = await _repo.DeleteUserAsync(id);
+
+            if (!result)
+            {
+                return BadRequest("Errors.");
+            }
+
+            return Ok("Deleted.");
         }
 
         [HttpPost("login")]
@@ -54,6 +98,20 @@ namespace TEST.Controllers
             var result = await _repo.RefreshToken(dto);
 
             return Ok(result);
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout(TokenDto dto)
+        {
+            var result = await _repo.LogoutAsync(dto);
+
+            if (!result)
+            {
+                return BadRequest("Errors.");
+            }
+
+            return Ok("Success.");
         }
     }
 }
