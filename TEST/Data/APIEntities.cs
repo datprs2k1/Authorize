@@ -15,7 +15,11 @@ namespace TEST.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<User>().ToTable("users");
+            modelBuilder.Entity<User>(e =>
+            {
+                e.ToTable("users");
+                e.HasIndex(x => x.Email).IsUnique();
+            });
 
             modelBuilder.Entity<Token>(e =>
             {

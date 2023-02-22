@@ -9,5 +9,8 @@ namespace TEST.Models.Token
         [Required]
         public string? RefreshToken { get; set; }
 
+        public long ExpiredAt { get; set; }
+        public int UserID { get; set; }
+
     }
 }

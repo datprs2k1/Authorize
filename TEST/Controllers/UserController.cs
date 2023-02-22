@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TEST.Models.Token;
 using TEST.Models.User;
@@ -11,10 +12,12 @@ namespace TEST.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _repo;
+        private readonly IMapper _mapper;
 
-        public UserController(IUserRepository repo)
+        public UserController(IUserRepository repo, IMapper mapper)
         {
             _repo = repo;
+            _mapper = mapper;
         }
 
         [HttpGet("")]
@@ -73,7 +76,18 @@ namespace TEST.Controllers
         {
             var result = await _repo.LoginAsync(dto);
 
-            return Ok(result);
+            var user = await _repo.GetUserById(result.UserID);
+
+            return Ok(new
+            {
+                token = new
+                {
+                    accessToken = result.AccessToken,
+                    refreshToken = result.RefreshToken,
+                    expiredAt = result.ExpiredAt,
+                },
+                user = _mapper.Map<UserDto>(user)
+            });
         }
 
         [HttpPost("register")]

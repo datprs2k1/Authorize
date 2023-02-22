@@ -25,11 +25,11 @@ namespace TEST.Helpers
 
                 switch (error)
                 {
-                    case ApplicationException e:
+                    case ApplicationException:
                         // custom application error
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                         break;
-                    case KeyNotFoundException e:
+                    case KeyNotFoundException:
                         // not found error
                         response.StatusCode = (int)HttpStatusCode.NotFound;
                         break;

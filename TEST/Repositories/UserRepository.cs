@@ -86,10 +86,14 @@ namespace TEST.Repositories
 
             await _context.SaveChangesAsync();
 
+            DateTimeOffset dateTimeOffset = newRefreshToken.expiredAt;
+
             return new TokenDto
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
+                UserID = user.Id,
+                ExpiredAt = dateTimeOffset.ToUnixTimeMilliseconds(),
             };
         }
 
@@ -123,7 +127,7 @@ namespace TEST.Repositories
                 return true;
 
             }
-            catch (Exception ex)
+            catch (ApplicationException ex)
             {
                 throw new ApplicationException(ex.Message);
             }
@@ -239,6 +243,7 @@ namespace TEST.Repositories
 
         public async Task<bool> UpdateUserAsync(int id, UserDto user)
         {
+
             var userData = await _context.Users.FindAsync(id);
 
             if (userData == null)
@@ -254,6 +259,7 @@ namespace TEST.Repositories
             await _context.SaveChangesAsync();
 
             return true;
+
         }
 
         public async Task<bool> DeleteUserAsync(int id)
