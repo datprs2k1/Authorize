@@ -8,8 +8,6 @@ namespace TEST.Models.Token
         public string? AccessToken { get; set; }
         [Required]
         public string? RefreshToken { get; set; }
-
-        public long ExpiredAt { get; set; }
         public int UserID { get; set; }
 
     }

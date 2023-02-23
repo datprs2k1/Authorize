@@ -40,7 +40,7 @@ namespace TEST.Repositories
 
                 return token;
             }
-            catch (Exception ex)
+            catch (ApplicationException ex)
             {
                 throw new ApplicationException(ex.Message);
             }
@@ -93,7 +93,6 @@ namespace TEST.Repositories
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 UserID = user.Id,
-                ExpiredAt = dateTimeOffset.ToUnixTimeMilliseconds(),
             };
         }
 
@@ -129,6 +128,10 @@ namespace TEST.Repositories
             }
             catch (ApplicationException ex)
             {
+                if (ex.InnerException != null)
+                {
+                    throw new ApplicationException(ex.InnerException.Message);
+                }
                 throw new ApplicationException(ex.Message);
             }
         }
@@ -212,7 +215,7 @@ namespace TEST.Repositories
                 return token;
 
             }
-            catch (Exception ex)
+            catch (ApplicationException ex)
             {
 
                 throw new ApplicationException(ex.Message);

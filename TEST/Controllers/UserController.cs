@@ -84,7 +84,6 @@ namespace TEST.Controllers
                 {
                     accessToken = result.AccessToken,
                     refreshToken = result.RefreshToken,
-                    expiredAt = result.ExpiredAt,
                 },
                 user = _mapper.Map<UserDto>(user)
             });
