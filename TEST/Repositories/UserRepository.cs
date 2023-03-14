@@ -27,11 +27,10 @@ namespace TEST.Repositories
         {
             try
             {
-                var userLogin = _mapper.Map<User>(dto);
 
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == userLogin.Email);
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == dto.Email);
 
-                if (user == null && user.Password != userLogin.Password)
+                if (user == null || BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
                 {
                     throw new ApplicationException("Email or Password is not correct.");
                 }
