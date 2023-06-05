@@ -5,24 +5,21 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using TEST.Core;
 using TEST.Data;
 using TEST.Models.Token;
 using TEST.Models.User;
 
 namespace TEST.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : GenericRepository<User>, IUserRepository
     {
-        private readonly APIEntities _context;
-        private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
 
-        public UserRepository(APIEntities context, IMapper mapper, IConfiguration configuration)
+        public UserRepository(APIEntities context, ILogger logger, IMapper mapper, IConfiguration configuration) : base(context, logger, mapper, configuration)
         {
-            _context = context;
-            _mapper = mapper;
-            _configuration = configuration;
+
         }
+
         public async Task<TokenDto> LoginAsync(LoginDto dto)
         {
             try

@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TEST.Core;
 using TEST.Data;
 using TEST.Helpers;
-using TEST.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +24,7 @@ builder.Services.AddCors(option => option.AddDefaultPolicy(policy => policy.Allo
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAuthentication(options =>
 {

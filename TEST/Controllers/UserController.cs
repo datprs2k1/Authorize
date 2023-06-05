@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TEST.Core;
 using TEST.Models.Token;
 using TEST.Models.User;
-using TEST.Repositories;
 
 namespace TEST.Controllers
 {
@@ -11,20 +11,19 @@ namespace TEST.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserRepository _repo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public UserController(IUserRepository repo, IMapper mapper)
+        public UserController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _repo = repo;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         [HttpGet("")]
-        [Authorize]
         public async Task<IActionResult> GetUsers()
         {
-            var data = await _repo.GetUsersAsync();
+            var data = await _unitOfWork.Users.All();
 
             return Ok(data);
         }
@@ -33,7 +32,7 @@ namespace TEST.Controllers
 
         public async Task<IActionResult> GetUserById(int id)
         {
-            var data = await _repo.GetUserById(id);
+            var data = await _unitOfWork.Users.GetUserById(id);
 
             if (data == null)
             {
@@ -47,7 +46,7 @@ namespace TEST.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateUser(int id, UserDto user)
         {
-            var result = await _repo.UpdateUserAsync(id, user);
+            var result = await _unitOfWork.Users.UpdateUserAsync(id, user);
 
             if (!result)
             {
@@ -61,7 +60,7 @@ namespace TEST.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var result = await _repo.DeleteUserAsync(id);
+            var result = await _unitOfWork.Users.DeleteUserAsync(id);
 
             if (!result)
             {
@@ -74,9 +73,9 @@ namespace TEST.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
-            var result = await _repo.LoginAsync(dto);
+            var result = await _unitOfWork.Users.LoginAsync(dto);
 
-            var user = await _repo.GetUserById(result.UserID);
+            var user = await _unitOfWork.Users.GetUserById(result.UserID);
 
             return Ok(new
             {
@@ -92,7 +91,7 @@ namespace TEST.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
-            var result = await _repo.RegisterAsync(dto);
+            var result = await _unitOfWork.Users.RegisterAsync(dto);
 
             if (result)
             {
@@ -108,7 +107,7 @@ namespace TEST.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh(TokenDto dto)
         {
-            var result = await _repo.RefreshToken(dto);
+            var result = await _unitOfWork.Users.RefreshToken(dto);
 
             return Ok(result);
         }
@@ -117,7 +116,7 @@ namespace TEST.Controllers
         [Authorize]
         public async Task<IActionResult> Logout(TokenDto dto)
         {
-            var result = await _repo.LogoutAsync(dto);
+            var result = await _unitOfWork.Users.LogoutAsync(dto);
 
             if (!result)
             {
