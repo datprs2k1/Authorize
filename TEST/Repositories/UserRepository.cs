@@ -12,12 +12,11 @@ using TEST.Models.User;
 
 namespace TEST.Repositories
 {
-    public class UserRepository : GenericRepository<User>, IUserRepository
+    public class UserRepository : GenericRepository, IUserRepository
     {
 
         public UserRepository(APIEntities context, ILogger logger, IMapper mapper, IConfiguration configuration) : base(context, logger, mapper, configuration)
         {
-
         }
 
         public async Task<TokenDto> LoginAsync(LoginDto dto)
@@ -47,11 +46,11 @@ namespace TEST.Repositories
         {
             var authClaims = new List<Claim>
             {
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Email, user.Email!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
 
             SigningCredentials signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -146,7 +145,7 @@ namespace TEST.Repositories
 
                 ValidAudience = _configuration["JWT:Audience"],
                 ValidIssuer = _configuration["JWT:Issuer"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!)),
 
                 ClockSkew = TimeSpan.Zero
             };
@@ -189,7 +188,7 @@ namespace TEST.Repositories
                     throw new ApplicationException("Jti is not corrected");
                 }
 
-                var tokenExpiredDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp)?.Value);
+                var tokenExpiredDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp)?.Value!);
 
                 var expiredDate = ConvertUnixToDateTime(tokenExpiredDate);
 
@@ -206,7 +205,7 @@ namespace TEST.Repositories
 
                 var user = await _context.Users.FindAsync(tokenStored.UserID);
 
-                var token = await GenerateToken(user);
+                var token = await GenerateToken(user!);
 
                 return token;
 
@@ -279,7 +278,7 @@ namespace TEST.Repositories
 
         public async Task<bool> LogoutAsync(TokenDto dto)
         {
-            var token = await _context.Tokens.FirstOrDefaultAsync(x => x.token.Equals(dto.RefreshToken));
+            var token = await _context.Tokens.FirstOrDefaultAsync(x => x.token!.Equals(dto.RefreshToken));
 
             if (token == null)
             {

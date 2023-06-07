@@ -7,23 +7,20 @@ using TEST.Models.User;
 
 namespace TEST.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UserController : ControllerBase
+
+    public class UserController : BaseController
     {
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public UserController(IUnitOfWork unitOfWork, IMapper mapper)
+        public UserController(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork)
         {
-            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         [HttpGet("")]
         public async Task<IActionResult> GetUsers()
         {
-            var data = await _unitOfWork.Users.All();
+            var data = await _unitOfWork.Users.GetUsersAsync();
 
             return Ok(data);
         }
