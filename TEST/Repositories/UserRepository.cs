@@ -12,7 +12,7 @@ using TEST.Models.User;
 
 namespace TEST.Repositories
 {
-    public class UserRepository : GenericRepository, IUserRepository
+    public class UserRepository : GenericRepository<User>, IUserRepository
     {
 
         public UserRepository(APIEntities context, ILogger logger, IMapper mapper, IConfiguration configuration) : base(context, logger, mapper, configuration)
@@ -24,9 +24,11 @@ namespace TEST.Repositories
             try
             {
 
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == dto.Email);
+                var data_user = await All();
 
-                if (user == null || BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+                var user = data_user.Where(x => x.Email == dto.Email).FirstOrDefault();
+
+                if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
                 {
                     throw new ApplicationException("Email or Password is not correct.");
                 }
@@ -105,7 +107,8 @@ namespace TEST.Repositories
         {
             try
             {
-                var exist = await _context.Users.AnyAsync(x => x.Email == dto.Email);
+                var data_user = await All();
+                var exist = data_user.Any(x => x.Email == dto.Email);
 
                 if (exist)
                 {
@@ -114,7 +117,7 @@ namespace TEST.Repositories
 
                 var user = _mapper.Map<User>(dto);
 
-                _context.Users.Add(user);
+                await Add(user);
 
                 await _context.SaveChangesAsync();
 
@@ -203,7 +206,9 @@ namespace TEST.Repositories
                 _context.Tokens.Update(tokenStored);
                 await _context.SaveChangesAsync();
 
-                var user = await _context.Users.FindAsync(tokenStored.UserID);
+                var data_user = await All();
+
+                var user = data_user.FirstOrDefault(x => x.Id == tokenStored.UserID);
 
                 var token = await GenerateToken(user!);
 
@@ -226,7 +231,7 @@ namespace TEST.Repositories
 
         public async Task<List<UserDto>> GetUsersAsync()
         {
-            var data = await _context.Users.ToListAsync();
+            var data = await All();
 
             return _mapper.Map<List<UserDto>>(data);
 
@@ -234,7 +239,7 @@ namespace TEST.Repositories
 
         public async Task<UserDto> GetUserById(int id)
         {
-            var data = await _context.Users.FindAsync(id);
+            var data = await GetById(id);
 
             return _mapper.Map<UserDto>(data);
         }
@@ -242,7 +247,7 @@ namespace TEST.Repositories
         public async Task<bool> UpdateUserAsync(int id, UserDto user)
         {
 
-            var userData = await _context.Users.FindAsync(id);
+            var userData = await GetById(id);
 
             if (userData == null)
             {
@@ -252,7 +257,7 @@ namespace TEST.Repositories
             userData.Name = user.Name;
             userData.Email = user.Email;
 
-            _context.Users.Update(userData);
+            await Update(userData);
 
             await _context.SaveChangesAsync();
 
@@ -262,14 +267,14 @@ namespace TEST.Repositories
 
         public async Task<bool> DeleteUserAsync(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await GetById(id);
 
             if (user == null)
             {
                 throw new ApplicationException("User is not exist.");
             }
 
-            _context.Users.Remove(user);
+            await Delete(user);
 
             await _context.SaveChangesAsync();
 
