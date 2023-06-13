@@ -24,9 +24,7 @@ namespace TEST.Repositories
             try
             {
 
-                var data_user = await All();
-
-                var user = data_user.Where(x => x.Email == dto.Email).FirstOrDefault();
+                var user = await FirstOrDefaultAsync(x => x.Email == dto.Email);
 
                 if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
                 {
@@ -83,8 +81,6 @@ namespace TEST.Repositories
 
             await _context.SaveChangesAsync();
 
-            DateTimeOffset dateTimeOffset = newRefreshToken.expiredAt;
-
             return new TokenDto
             {
                 AccessToken = accessToken,
@@ -107,8 +103,7 @@ namespace TEST.Repositories
         {
             try
             {
-                var data_user = await All();
-                var exist = data_user.Any(x => x.Email == dto.Email);
+                var exist = await AnyAsync(x => x.Email == dto.Email);
 
                 if (exist)
                 {
@@ -117,9 +112,9 @@ namespace TEST.Repositories
 
                 var user = _mapper.Map<User>(dto);
 
-                await Add(user);
+                await AddAsync(user);
 
-                await _context.SaveChangesAsync();
+                await SaveAsync();
 
                 return true;
 
@@ -206,9 +201,8 @@ namespace TEST.Repositories
                 _context.Tokens.Update(tokenStored);
                 await _context.SaveChangesAsync();
 
-                var data_user = await All();
 
-                var user = data_user.FirstOrDefault(x => x.Id == tokenStored.UserID);
+                var user = await FirstOrDefaultAsync(x => x.Id == tokenStored.UserID);
 
                 var token = await GenerateToken(user!);
 
@@ -231,7 +225,7 @@ namespace TEST.Repositories
 
         public async Task<List<UserDto>> GetUsersAsync()
         {
-            var data = await All();
+            var data = await GetAllAsync();
 
             return _mapper.Map<List<UserDto>>(data);
 
@@ -239,7 +233,7 @@ namespace TEST.Repositories
 
         public async Task<UserDto> GetUserById(int id)
         {
-            var data = await GetById(id);
+            var data = await GetByIdAsync(id);
 
             return _mapper.Map<UserDto>(data);
         }
@@ -247,7 +241,7 @@ namespace TEST.Repositories
         public async Task<bool> UpdateUserAsync(int id, UserDto user)
         {
 
-            var userData = await GetById(id);
+            var userData = await GetByIdAsync(id);
 
             if (userData == null)
             {
@@ -257,9 +251,9 @@ namespace TEST.Repositories
             userData.Name = user.Name;
             userData.Email = user.Email;
 
-            await Update(userData);
+            Update(userData);
 
-            await _context.SaveChangesAsync();
+            await SaveAsync();
 
             return true;
 
@@ -267,16 +261,16 @@ namespace TEST.Repositories
 
         public async Task<bool> DeleteUserAsync(int id)
         {
-            var user = await GetById(id);
+            var user = await GetByIdAsync(id);
 
             if (user == null)
             {
                 throw new ApplicationException("User is not exist.");
             }
 
-            await Delete(user);
+            Delete(user);
 
-            await _context.SaveChangesAsync();
+            await SaveAsync();
 
             return true;
         }
